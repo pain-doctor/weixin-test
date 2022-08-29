@@ -88,7 +88,7 @@ def get_weather(region):
         proposal += response["daily"][0]["text"]
     return weather, temp, max_temp, min_temp, wind_dir, sunrise, sunset, category, pm2p5, proposal
 
-
+# 彩虹屁接口
 def get_tianhang():
     try:
         key = config["tian_api"]
@@ -108,6 +108,25 @@ def get_tianhang():
         chp = ""
     return chp
 
+# 早安接口
+def get_morning():
+    try:
+        key = config["tian_api"]
+        url = "http://api.tianapi.com/caihongpi/index?key={}".format(key)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
+            'Content-type': 'application/x-www-form-urlencoded'
+
+        }
+        response = get(url, headers=headers).json()
+        if response["code"] == 200:
+            morning = response["newslist"][0]["content"]
+        else:
+            morning = ""
+    except KeyError:
+        morning = ""
+    return morning
 
 def get_birthday(birthday, year, today):
     birthday_year = birthday.split("-")[0]
@@ -160,7 +179,7 @@ def get_ciba():
 
 
 def send_message(to_user, access_token, region_name, weather, temp, wind_dir, note_ch, note_en, max_temp, min_temp,
-                 sunrise, sunset, category, pm2p5, proposal, chp):
+                 sunrise, sunset, category, pm2p5,morning, proposal, chp):
     url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={}".format(access_token)
     week_list = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
     year = localtime().tm_year
@@ -240,6 +259,10 @@ def send_message(to_user, access_token, region_name, weather, temp, wind_dir, no
             },
             "pm2p5": {
                 "value": pm2p5,
+                "color": get_color()
+            },
+            "morning": {
+                "value": morning,
                 "color": get_color()
             },
             "proposal": {
