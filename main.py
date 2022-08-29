@@ -1,3 +1,4 @@
+from email.base64mime import header_length
 import random
 from time import localtime
 from requests import get, post
@@ -128,6 +129,26 @@ def get_morning():
         morning = ""
     return morning
 
+# 健康小提示接口
+def get_health():
+    try:
+        key = config["tian_api"]
+        url = "http://api.tianapi.com/healthtip/index?key={}".format(key)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
+            'Content-type': 'application/x-www-form-urlencoded'
+
+        }
+        response = get(url, headers=headers).json()
+        if response["code"] == 200:
+            health = response["newslist"][0]["content"]
+        else:
+            health = ""
+    except KeyError:
+        health = ""
+    return health
+
 def get_birthday(birthday, year, today):
     birthday_year = birthday.split("-")[0]
     # 判断是否为农历生日
@@ -179,7 +200,7 @@ def get_ciba():
 
 
 def send_message(to_user, access_token, region_name, weather, temp, wind_dir, note_ch, note_en, max_temp, min_temp,
-                 sunrise, sunset, category, pm2p5,morning, proposal, chp):
+                 sunrise, sunset, category, pm2p5,morning, proposal, chp,health):
     url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={}".format(access_token)
     week_list = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
     year = localtime().tm_year
@@ -273,7 +294,10 @@ def send_message(to_user, access_token, region_name, weather, temp, wind_dir, no
                 "value": chp,
                 "color": get_color()
             },
-
+            "health": {
+                "value": health,
+                "color": get_color()
+            },
         }
     }
     for key, value in birthdays.items():
@@ -330,8 +354,9 @@ if __name__ == "__main__":
         note_ch, note_en = get_ciba()
     chp = get_tianhang()
     morning= get_morning()
+    health = get_health()
     # 公众号推送消息
     for user in users:
         send_message(user, accessToken, region, weather, temp, wind_dir, note_ch, note_en, max_temp, min_temp, sunrise,
-                     sunset, category, pm2p5, morning,proposal, chp)
+                     sunset, category, pm2p5, morning,proposal, chp,health)
     os.system("pause")
