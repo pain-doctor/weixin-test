@@ -80,9 +80,7 @@ def get_weather(region):
     else:
         # 国外城市获取不到数据
         category = ""
-        pm2p5 = ""
-    id = random.randint(1, 16)
-    url = "https://devapi.qweather.com/v7/indices/1d?location={}&key={}&type={}".format(location_id, key, id)
+    url = "https://devapi.qweather.com/v7/indices/1d?location={}&key={}&type={}".format(location_id, key, 3)
     response = get(url, headers=headers).json()
     proposal = ""
     if response["code"] == "200":
